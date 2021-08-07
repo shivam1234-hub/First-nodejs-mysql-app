@@ -5,10 +5,10 @@ const nodemailer = require('nodemailer');
 
 require('dotenv').config()
 const connection = mysql.createConnection({
-    host:process.env.DB_HOST,
-    database:process.env.DATABASE,
-    user:process.env.DB_USER,
-    password:process.env.DB_PASS
+    host: process.env.DB_HOST,
+    database: process.env.DATABASE,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS
 })
 var transport = nodemailer.createTransport({
     service: "gmail",
@@ -23,7 +23,7 @@ var message;
 
 router.get('/register', (req, res) => {
     res.render('register');
-   
+
 
 
 })
@@ -97,7 +97,6 @@ router.post('/register', (req, res) => {
 
 
 
-
             var tabledata = "INSERT INTO registerdata (name,email,password,confirmpassword) VALUES ?";
             var values = [
                 [name, email, password, password2]
@@ -108,7 +107,7 @@ router.post('/register', (req, res) => {
                 console.log("Number of records inserted: " + result.affectedRows);
             });
 
-            req.flash('success_msg','You are now registered and can log in');
+            req.flash('success_msg', 'You are now registered and can log in');
             res.redirect('/users/login');
 
         }
@@ -152,33 +151,36 @@ router.post('/login', (req, res) => {
         } else {
             var user_name;
             connection.query('SELECT name FROM registerdata WHERE email=? AND password=?', [email, password], (err, res) => {
-               console.log(res[0].name);
-               user_name = res[0].name;
-            
+                console.log(res[0].name);
+                user_name = res[0].name;
 
-            message = {
-                from: 'shivamvijay543@gmail.com', // Sender address
-                to: `${req.body.email}`, // List of recipients
-                subject: 'First FullStact  App', // Subject line
-                text: `Hey ${ res[0].name}!This is Shivam Vijay ,Associate member at E-cell,IIT Kharagpur` // Plain text body
-            };
-            transport.sendMail(message, function(err, info) {
-                if (err) {
-                    console.log(err)
-                } else {
-                    console.log(info);
-                }
+
+                message = {
+                    from: 'shivamvijay543@gmail.com', // Sender address
+                    to: `${req.body.email}`, // List of recipients
+                    subject: 'First FullStact  App', // Subject line
+                    text: `Hey ${ res[0].name}!This is Shivam Vijay ,Associate member at E-cell,IIT Kharagpur` // Plain text body
+                };
+                transport.sendMail(message, function(err, info) {
+                    if (err) {
+                        console.log(err)
+                    } else {
+                        console.log(info);
+                    }
+                });
             });
-        });
-        setTimeout(() => { console.log(user_name);
-            res.render('dashboard', {
-
-                name: user_name
-            })},1000)
-       
-
+            setTimeout(() => {
+                console.log(user_name);
+                req.flash('name', `${user_name}`);
+                res.redirect('/users/dashboard');
+            }, 1000)
         }
     }, 1000)
+})
+
+router.get('/dashboard', (req, res) => {
+    res.render('dashboard');
+
 })
 
 module.exports = router;
